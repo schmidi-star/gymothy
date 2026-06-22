@@ -245,6 +245,32 @@
         ]
       },
       "comment": "Ab crunch machine kao core"
+    },
+    "W2-C-2026-06-22": {
+      "sets": {},
+      "comment": ""
+    },
+    "W2-A-2026-06-22": {
+      "sets": {
+        "rdl": [
+          {
+            "w": 50,
+            "r": 10,
+            "rpe": 7
+          },
+          {
+            "w": 50,
+            "r": 8,
+            "rpe": 8
+          },
+          {
+            "w": 50,
+            "r": 9,
+            "rpe": 8
+          }
+        ]
+      },
+      "comment": ""
     }
   },
   "weights": [
