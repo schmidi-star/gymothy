@@ -810,7 +810,8 @@ async function saveToGithub() {
   }
 
   showToast('Saving to GitHub…');
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+  const { settings, ...dataToSave } = state;
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(dataToSave, null, 2))));
   const apiUrl = `https://api.github.com/repos/${ghUser}/${ghRepo}/contents/data.json`;
 
   try {
