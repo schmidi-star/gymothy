@@ -876,6 +876,12 @@ function showGithubModal() {
   document.getElementById('ghModal').classList.add('open');
 }
 
+function safeStateForSync() {
+  // Never include credentials in synced or exported data
+  const { settings, ...rest } = state;
+  return rest;
+}
+
 async function saveToGithub() {
   const { ghUser, ghRepo, ghToken } = state.settings;
   if (!ghUser || !ghRepo || !ghToken) {
@@ -885,7 +891,7 @@ async function saveToGithub() {
     return;
   }
   showToast('Saving…');
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(safeStateForSync(), null, 2))));
   const apiUrl = `https://api.github.com/repos/${ghUser}/${ghRepo}/contents/data.json`;
   try {
     let sha = '';
@@ -940,7 +946,7 @@ async function loadFromGithub() {
 
 // ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
 function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+  const blob = new Blob([JSON.stringify(safeStateForSync(), null, 2)], { type:'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `gymothy-backup-${today()}.json`; a.click();
 }
