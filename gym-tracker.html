@@ -476,9 +476,8 @@ function renderExercises() {
 
   // Find existing session for this block/week/day (any date)
   const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
-  const sess = existing.length > 0
-    ? state.sessions[existing[0].key]
-    : getOrCreateSession(currentBlock, currentWeek, currentDay, today());
+  // Don't auto-create a session just by viewing — only create when user adds a set
+  const sess = existing.length > 0 ? state.sessions[existing[0].key] : { sets: {}, comment: '' };
   const sessDate = existing.length > 0 ? existing[0].date : today();
 
   // Session date badge
@@ -589,16 +588,20 @@ function buildSetRow(exId, idx, s, isDeload) {
   return row;
 }
 
-function getSessForCurrentView() {
+function getSessForCurrentView(createIfMissing = false) {
   const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
   if (existing.length > 0) return { key: existing[0].key, sess: state.sessions[existing[0].key] };
-  const k = sessionKey(currentBlock, currentWeek, currentDay, today());
-  if (!state.sessions[k]) state.sessions[k] = { sets: {}, comment: '' };
-  return { key: k, sess: state.sessions[k] };
+  // Only create a new session if explicitly requested (e.g. when adding a set)
+  if (createIfMissing) {
+    const k = sessionKey(currentBlock, currentWeek, currentDay, today());
+    if (!state.sessions[k]) state.sessions[k] = { sets: {}, comment: '' };
+    return { key: k, sess: state.sessions[k] };
+  }
+  return { key: null, sess: { sets: {}, comment: '' } };
 }
 
 function addSet(exId, maxSets, date) {
-  const { sess } = getSessForCurrentView();
+  const { sess } = getSessForCurrentView(true);
   if (!sess.sets[exId]) sess.sets[exId] = [];
   if (sess.sets[exId].length >= maxSets) { showToast(`Max ${maxSets} sets`, 'error'); return; }
   sess.sets[exId].push({ w:'', r:'', rpe:'' });
