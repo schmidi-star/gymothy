@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=block">
+<title>Gymothy — Demo</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f0;
+    --text2: #999;
+    --text3: #666;
+    --accent: #c8f542;
+    --accent-dim: rgba(200,245,66,0.12);
+    --accent-text: #0f0f0f;
+    --red: #ff5c5c;
+    --red-dim: rgba(255,92,92,0.12);
+    --blue: #5c9eff;
+    --blue-dim: rgba(92,158,255,0.12);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; min-height: 100vh; opacity: 0; transition: opacity 0.6s ease 0.1s; }
+
+  #splash {
+    position: fixed; inset: 0; z-index: 999;
+    background: #0f0f0f;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    transition: opacity 0.7s ease;
+  }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  .splash-mark { display: flex; align-items: center; gap: 4px; }
+  .splash-ring-wrap { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
+  .splash-ring-wrap svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .splash-ring-bg { fill: none; stroke: rgba(200,245,66,0.12); stroke-width: 2.5; }
+  .splash-ring {
+    fill: none; stroke: #c8f542; stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 201; stroke-dashoffset: 201;
+    animation: draw-ring 0.7s cubic-bezier(0.4,0,0.2,1) 0.1s forwards;
+  }
+  .splash-g {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800;
+    color: #c8f542; line-height: 1;
+    opacity: 0;
+    animation: fade-in 0.3s ease 0.75s forwards;
+  }
+  .splash-name {
+    font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 700;
+    color: #f0f0f0; letter-spacing: -1.5px; line-height: 1;
+    opacity: 0; transform: translateX(-18px);
+    animation: slide-in 0.4s cubic-bezier(0.2,0,0,1) 0.95s forwards;
+  }
+  .splash-sub {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 5px; color: #666; text-transform: uppercase;
+    opacity: 0;
+    animation: fade-in 0.4s ease 1.2s forwards;
+  }
+  @keyframes draw-ring { to { stroke-dashoffset: 0; } }
+  @keyframes fade-in { to { opacity: 1; } }
+  @keyframes slide-in { to { opacity: 1; transform: translateX(0); } }
+
+  /* demo banner */
+  .demo-banner { background: var(--accent-dim); border-bottom: 0.5px solid rgba(200,245,66,0.25); padding: 8px 16px; text-align: center; font-size: 12px; color: var(--accent); letter-spacing: 0.3px; }
+
+  .nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+  .nav-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .nav-actions { display: flex; gap: 8px; }
+  .icon-btn { background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 17px; }
+
+  .page { display: none; padding: 16px; max-width: 480px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 0.5px solid var(--border); display: flex; padding: 8px 0 16px; z-index: 100; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px; }
+  .tab-icon { font-size: 22px; color: var(--text3); transition: color 0.15s; }
+  .tab-label { font-size: 10px; color: var(--text3); transition: color 0.15s; }
+  .tab.active .tab-icon, .tab.active .tab-label { color: var(--accent); }
+  .pb { padding-bottom: 90px; }
+
+  .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+
+  .selector-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .selector-label { font-size: 12px; color: var(--text3); min-width: 36px; }
+  .selector-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; flex: 1; }
+  .selector-scroll::-webkit-scrollbar { display: none; }
+  .sel-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .sel-btn.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .sel-btn.deload { border-color: var(--blue); color: var(--blue); }
+  .sel-btn.deload.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .new-block-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--accent); background: transparent; color: var(--accent); font-size: 12px; cursor: pointer; white-space: nowrap; }
+
+  .day-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .day-tab { flex: 1; padding: 10px 0; text-align: center; border-radius: var(--radius-sm); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .day-tab.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+  .session-date-badge { font-size: 12px; color: var(--text3); margin-bottom: 14px; padding: 6px 10px; background: var(--bg2); border-radius: var(--radius-sm); border: 0.5px solid var(--border); display: inline-block; }
+
+  .exercise-block { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .exercise-header { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; }
+  .exercise-name { font-size: 15px; font-weight: 500; }
+  .exercise-name.clickable { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .exercise-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .exercise-chevron { font-size: 20px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
+  .exercise-chevron.open { transform: rotate(180deg); }
+  .exercise-body { border-top: 0.5px solid var(--border); padding: 12px 16px; display: none; }
+  .exercise-body.open { display: block; }
+  .last-session-hint { font-size: 12px; color: var(--text3); background: var(--bg3); border-radius: var(--radius-sm); padding: 7px 10px; margin-bottom: 10px; }
+  .last-session-hint strong { color: var(--text2); }
+
+  .set-headers { display: grid; grid-template-columns: 24px 1fr 1fr 1fr 28px; gap: 6px; margin-bottom: 4px; }
+  .set-row { display: grid; grid-template-columns: 24px 1fr 1fr 1fr 28px; gap: 6px; align-items: center; margin-bottom: 7px; }
+  .set-num { font-size: 12px; color: var(--text3); text-align: center; }
+  .set-label { font-size: 10px; color: var(--text3); text-align: center; padding-bottom: 2px; }
+  .set-input { background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 4px; font-size: 14px; color: var(--text); text-align: center; width: 100%; }
+  .set-input:focus { outline: none; border-color: var(--accent); }
+  .set-input::placeholder { color: var(--text3); }
+  .set-delete { background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--radius-sm); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 0.5px solid var(--border2); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; transition: all 0.15s; }
+  .btn-accent { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .btn-sm { padding: 7px 12px; font-size: 13px; }
+  .btn-full { width: 100%; margin-top: 8px; }
+
+  .comment-area { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; padding: 10px; resize: vertical; min-height: 70px; font-family: inherit; margin-top: 6px; }
+
+  .weight-input-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+  .input-group { flex: 1; }
+  .input-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+  .text-input { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px; color: var(--text); font-family: inherit; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+  .stat-val { font-size: 22px; font-weight: 600; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0; border: 0.5px solid var(--border2); padding: 20px; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+  .modal-close { float: right; background: none; border: none; color: var(--text2); font-size: 22px; cursor: pointer; margin-top: -4px; }
+
+  .chart-wrap { position: relative; width: 100%; height: 220px; margin: 8px 0; }
+
+  .section-title { font-size: 12px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; margin-top: 20px; }
+  .section-title:first-child { margin-top: 0; }
+
+  .toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 300; white-space: nowrap; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(200,245,66,0.5); color: var(--accent); }
+  .toast.error { border-color: rgba(255,92,92,0.5); color: var(--red); }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+  .progress-ex-row { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .progress-ex-row:active { opacity: 0.7; }
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="splash-mark">
+    <div class="splash-ring-wrap">
+      <svg viewBox="0 0 68 68" width="68" height="68">
+        <circle class="splash-ring-bg" cx="34" cy="34" r="32"/>
+        <circle class="splash-ring" cx="34" cy="34" r="32"/>
+      </svg>
+      <div class="splash-g">G</div>
+    </div>
+    <span class="splash-name">ymothy</span>
+  </div>
+  <div class="splash-sub">Strength Tracker</div>
+</div>
+
+<div class="demo-banner">✦ Demo mode — sample data only</div>
+
+<div class="nav">
+  <div class="nav-title" id="navTitle">Gymothy</div>
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="showToast('GitHub sync disabled in demo','error')" title="GitHub sync">☁️</button>
+  </div>
+</div>
+
+<div class="page active pb" id="page-train">
+  <div class="selector-row" style="margin-top:4px;">
+    <div class="selector-label">Block</div>
+    <div class="selector-scroll" id="blockBar"></div>
+  </div>
+  <div class="selector-row">
+    <div class="selector-label">Week</div>
+    <div class="selector-scroll" id="weekBar"></div>
+  </div>
+  <div class="day-tabs">
+    <button class="day-tab active" onclick="selectDay('A',this)">Day A</button>
+    <button class="day-tab" onclick="selectDay('B',this)">Day B</button>
+    <button class="day-tab" onclick="selectDay('C',this)">Day C</button>
+  </div>
+  <div id="sessionDateBadge"></div>
+  <div id="exerciseList"></div>
+  <div style="margin-top:14px;">
+    <div class="section-title">Session notes</div>
+    <textarea class="comment-area" id="sessionComment" placeholder="Fatigue level, aches, anything to remember…" readonly></textarea>
+  </div>
+</div>
+
+<div class="page pb" id="page-progress">
+  <div id="progressContent"></div>
+</div>
+
+<div class="page pb" id="page-weight">
+  <div class="section-title">Log body weight</div>
+  <div class="weight-input-row">
+    <div class="input-group">
+      <label class="input-label">Weight (kg)</label>
+      <input class="text-input" type="number" step="0.1" id="bwInput" placeholder="68.5">
+    </div>
+    <div class="input-group" style="max-width:130px;">
+      <label class="input-label">Date</label>
+      <input class="text-input" type="date" id="bwDate">
+    </div>
+    <button class="btn btn-accent" onclick="showToast('Demo mode — data is read-only','error')" style="flex-shrink:0;">Log</button>
+  </div>
+  <div id="weightChart" class="card" style="display:none;">
+    <div class="section-title" style="margin-top:0;">Body weight over time</div>
+    <div class="chart-wrap"><canvas id="bwCanvas"></canvas></div>
+    <div id="bwStats" class="stat-grid" style="margin-top:12px;"></div>
+  </div>
+  <div id="weightLog"></div>
+</div>
+
+<div class="page pb" id="page-settings">
+  <div style="padding: 40px 20px; text-align:center; color: var(--text3);">
+    <div style="font-size:32px;margin-bottom:12px;">⚙️</div>
+    <div style="font-size:15px;color:var(--text2);margin-bottom:8px;">This is a demo</div>
+    <div style="font-size:13px;line-height:1.6;">Settings and GitHub sync are disabled.<br>The real app supports private data storage<br>via your own GitHub repo.</div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <div class="tab active" onclick="showPage('train',this)">
+    <div class="tab-icon">🏋️</div><div class="tab-label">Train</div>
+  </div>
+  <div class="tab" onclick="showPage('progress',this)">
+    <div class="tab-icon">📈</div><div class="tab-label">Progress</div>
+  </div>
+  <div class="tab" onclick="showPage('weight',this)">
+    <div class="tab-icon">⚖️</div><div class="tab-label">Weight</div>
+  </div>
+  <div class="tab" onclick="showPage('settings',this)">
+    <div class="tab-icon">⚙️</div><div class="tab-label">Settings</div>
+  </div>
+</div>
+
+<!-- EXERCISE PROGRESS MODAL -->
+<div class="modal-overlay" id="exModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('exModal')">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="stat-grid" id="modalStats"></div>
+    <div class="chart-wrap"><canvas id="modalCanvas"></canvas></div>
+    <div style="margin-top:16px;">
+      <div class="section-title">All sessions</div>
+      <div id="modalHistory"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const EXERCISES = {
+  A: [
+    { id:'rdl',  name:'Romanian deadlift (barbell)', target:'8–10 reps', rpe:'7–8' },
+    { id:'bss',  name:'Bulgarian split squat (DB)',  target:'10 each leg', rpe:'7' },
+    { id:'ht',   name:'Hip thrust (machine)',        target:'10–12 reps', rpe:'7–8 / top 8–9' },
+    { id:'ghr',  name:'Glute ham raise',             target:'8–10 reps', rpe:'7' },
+    { id:'abd',  name:'Abductor machine / banded clamshell', target:'20 reps', rpe:'6–7' },
+  ],
+  B: [
+    { id:'idp',  name:'Incline dumbbell press',       target:'8–10 reps', rpe:'7–8' },
+    { id:'dlr',  name:'Dumbbell lateral raise',       target:'15 reps',   rpe:'7' },
+    { id:'scr',  name:'Seated cable row (close grip)',target:'10–12 reps',rpe:'7' },
+    { id:'lp',   name:'Lat pulldown',                 target:'10–12 reps',rpe:'7–8' },
+    { id:'te',   name:'Tricep extension',             target:'12 reps',   rpe:'7' },
+  ],
+  C: [
+    { id:'bs',   name:'Back squat',                   target:'6–8 reps',  rpe:'7–8' },
+    { id:'db',   name:'Dumbbell bench',               target:'10 reps',   rpe:'7' },
+    { id:'slp',  name:'Single leg press (high foot)', target:'12 each leg',rpe:'7' },
+    { id:'fp',   name:'Face pull (rope)',              target:'15 reps',   rpe:'6–7' },
+    { id:'core', name:'Core – choice',                target:'varies',    rpe:'6–7' },
+  ]
+};
+
+// ── DEMO DATA ─────────────────────────────────────────────────────────────────
+const DEMO_STATE = {
+  currentBlock: 2,
+  blocks: {
+    1: { startDate: '2026-04-07', label: 'Block 1' },
+    2: { startDate: '2026-05-19', label: 'Block 2' }
+  },
+  weights: [
+    {date:'2026-04-07',kg:72.4},{date:'2026-04-09',kg:72.1},{date:'2026-04-11',kg:71.8},
+    {date:'2026-04-14',kg:71.6},{date:'2026-04-16',kg:71.9},{date:'2026-04-18',kg:71.5},
+    {date:'2026-04-21',kg:71.2},{date:'2026-04-23',kg:70.8},{date:'2026-04-25',kg:71.0},
+    {date:'2026-04-28',kg:70.6},{date:'2026-04-30',kg:70.4},{date:'2026-05-02',kg:70.7},
+    {date:'2026-05-05',kg:70.2},{date:'2026-05-07',kg:69.9},{date:'2026-05-09',kg:70.1},
+    {date:'2026-05-12',kg:69.7},{date:'2026-05-14',kg:69.5},{date:'2026-05-16',kg:69.8},
+    {date:'2026-05-19',kg:69.4},{date:'2026-05-21',kg:69.2},{date:'2026-05-23',kg:69.5},
+    {date:'2026-05-26',kg:69.0},{date:'2026-05-28',kg:68.8},{date:'2026-05-30',kg:69.1},
+    {date:'2026-06-02',kg:68.6},{date:'2026-06-04',kg:68.4},{date:'2026-06-06',kg:68.7},
+    {date:'2026-06-09',kg:68.3},{date:'2026-06-11',kg:68.1},{date:'2026-06-13',kg:68.4},
+    {date:'2026-06-16',kg:68.0},{date:'2026-06-18',kg:67.8},{date:'2026-06-20',kg:68.1},
+    {date:'2026-06-23',kg:67.6}
+  ],
+  sessions: {
+    // Block 1 — Week 1
+    'B1-W1-A-2026-04-07': { comment: 'First session, finding weights', sets: {
+      rdl: [{w:50,r:10,rpe:7},{w:55,r:9,rpe:7.5},{w:55,r:8,rpe:8}],
+      bss: [{w:16,r:10,rpe:7},{w:16,r:10,rpe:7},{w:18,r:9,rpe:7.5}],
+      ht:  [{w:60,r:12,rpe:7},{w:70,r:11,rpe:7.5},{w:70,r:10,rpe:8}],
+      ghr: [{w:0,r:8,rpe:7},{w:0,r:8,rpe:7.5},{w:0,r:7,rpe:8}],
+      abd: [{w:40,r:20,rpe:6},{w:40,r:20,rpe:6},{w:40,r:18,rpe:6.5}]
+    }},
+    'B1-W1-B-2026-04-08': { comment: '', sets: {
+      idp: [{w:18,r:10,rpe:7},{w:20,r:9,rpe:7.5},{w:20,r:8,rpe:8}],
+      dlr: [{w:8,r:15,rpe:7},{w:8,r:15,rpe:7},{w:8,r:14,rpe:7.5}],
+      scr: [{w:45,r:12,rpe:7},{w:50,r:11,rpe:7},{w:50,r:10,rpe:7.5}],
+      lp:  [{w:40,r:12,rpe:7},{w:45,r:11,rpe:7.5},{w:45,r:10,rpe:8}],
+      te:  [{w:20,r:12,rpe:7},{w:22,r:12,rpe:7},{w:22,r:11,rpe:7.5}]
+    }},
+    'B1-W1-C-2026-04-09': { comment: 'Squat depth improving', sets: {
+      bs:  [{w:60,r:8,rpe:7},{w:65,r:7,rpe:7.5},{w:65,r:6,rpe:8}],
+      db:  [{w:20,r:10,rpe:7},{w:22,r:10,rpe:7},{w:22,r:9,rpe:7.5}],
+      slp: [{w:50,r:12,rpe:7},{w:55,r:11,rpe:7},{w:55,r:10,rpe:7.5}],
+      fp:  [{w:15,r:15,rpe:6},{w:15,r:15,rpe:6},{w:15,r:14,rpe:6.5}],
+      core:[{w:0,r:20,rpe:6},{w:0,r:20,rpe:6},{w:0,r:18,rpe:6.5}]
+    }},
+    // Block 1 — Week 2
+    'B1-W2-A-2026-04-14': { comment: 'Hip thrust PR feeling close', sets: {
+      rdl: [{w:55,r:10,rpe:7},{w:60,r:9,rpe:7.5},{w:60,r:8,rpe:8}],
+      bss: [{w:18,r:10,rpe:7},{w:18,r:10,rpe:7},{w:20,r:9,rpe:7.5}],
+      ht:  [{w:70,r:12,rpe:7},{w:80,r:11,rpe:7.5},{w:80,r:10,rpe:8.5}],
+      ghr: [{w:0,r:9,rpe:7},{w:0,r:9,rpe:7},{w:0,r:8,rpe:8}],
+      abd: [{w:42,r:20,rpe:6},{w:42,r:20,rpe:6},{w:42,r:19,rpe:6.5}]
+    }},
+    'B1-W2-B-2026-04-15': { comment: '', sets: {
+      idp: [{w:20,r:10,rpe:7},{w:22,r:9,rpe:7.5},{w:22,r:8,rpe:8}],
+      dlr: [{w:8,r:15,rpe:7},{w:9,r:15,rpe:7},{w:9,r:13,rpe:7.5}],
+      scr: [{w:50,r:12,rpe:7},{w:52,r:11,rpe:7},{w:52,r:10,rpe:7.5}],
+      lp:  [{w:45,r:12,rpe:7},{w:47,r:11,rpe:7.5},{w:47,r:10,rpe:8}],
+      te:  [{w:22,r:12,rpe:7},{w:24,r:12,rpe:7},{w:24,r:10,rpe:7.5}]
+    }},
+    'B1-W2-C-2026-04-16': { comment: '', sets: {
+      bs:  [{w:65,r:8,rpe:7},{w:70,r:7,rpe:7.5},{w:70,r:6,rpe:8}],
+      db:  [{w:22,r:10,rpe:7},{w:24,r:10,rpe:7},{w:24,r:9,rpe:7.5}],
+      slp: [{w:55,r:12,rpe:7},{w:57,r:11,rpe:7},{w:57,r:10,rpe:7.5}],
+      fp:  [{w:15,r:15,rpe:6},{w:17,r:15,rpe:6},{w:17,r:14,rpe:6.5}],
+      core:[{w:0,r:25,rpe:6},{w:0,r:25,rpe:6},{w:0,r:22,rpe:6.5}]
+    }},
+    // Block 1 — Week 3
+    'B1-W3-A-2026-04-21': { comment: 'Glutes on fire', sets: {
+      rdl: [{w:57.5,r:10,rpe:7},{w:62.5,r:9,rpe:7.5},{w:62.5,r:8,rpe:8}],
+      bss: [{w:20,r:10,rpe:7},{w:20,r:10,rpe:7},{w:22,r:9,rpe:8}],
+      ht:  [{w:80,r:12,rpe:7},{w:90,r:11,rpe:8},{w:90,r:10,rpe:8.5}],
+      ghr: [{w:0,r:10,rpe:7},{w:0,r:9,rpe:7.5},{w:0,r:8,rpe:8}],
+      abd: [{w:44,r:20,rpe:6},{w:44,r:20,rpe:6},{w:44,r:19,rpe:6.5}]
+    }},
+    'B1-W3-B-2026-04-22': { comment: '', sets: {
+      idp: [{w:22,r:10,rpe:7},{w:24,r:9,rpe:7.5},{w:24,r:8,rpe:8}],
+      dlr: [{w:9,r:15,rpe:7},{w:10,r:15,rpe:7},{w:10,r:13,rpe:7.5}],
+      scr: [{w:52,r:12,rpe:7},{w:55,r:11,rpe:7},{w:55,r:10,rpe:7.5}],
+      lp:  [{w:47,r:12,rpe:7},{w:50,r:11,rpe:7.5},{w:50,r:10,rpe:8}],
+      te:  [{w:24,r:12,rpe:7},{w:26,r:12,rpe:7},{w:26,r:10,rpe:8}]
+    }},
+    'B1-W3-C-2026-04-23': { comment: 'Back squat feeling solid', sets: {
+      bs:  [{w:67.5,r:8,rpe:7},{w:72.5,r:7,rpe:7.5},{w:72.5,r:6,rpe:8}],
+      db:  [{w:24,r:10,rpe:7},{w:26,r:10,rpe:7},{w:26,r:9,rpe:7.5}],
+      slp: [{w:57,r:12,rpe:7},{w:60,r:11,rpe:7},{w:60,r:10,rpe:7.5}],
+      fp:  [{w:17,r:15,rpe:6},{w:17,r:15,rpe:6},{w:17,r:14,rpe:6.5}],
+      core:[{w:0,r:25,rpe:6},{w:0,r:25,rpe:6},{w:0,r:22,rpe:6.5}]
+    }},
+    // Block 1 — Week 4
+    'B1-W4-A-2026-04-28': { comment: '', sets: {
+      rdl: [{w:60,r:10,rpe:7},{w:65,r:9,rpe:7.5},{w:65,r:8,rpe:8}],
+      bss: [{w:20,r:10,rpe:7},{w:22,r:10,rpe:7},{w:24,r:9,rpe:8}],
+      ht:  [{w:90,r:12,rpe:7},{w:100,r:11,rpe:8},{w:100,r:10,rpe:8.5}],
+      ghr: [{w:0,r:10,rpe:7},{w:2.5,r:9,rpe:7.5},{w:2.5,r:8,rpe:8}],
+      abd: [{w:46,r:20,rpe:6},{w:46,r:20,rpe:6},{w:46,r:18,rpe:6.5}]
+    }},
+    'B1-W4-B-2026-04-29': { comment: '', sets: {
+      idp: [{w:22,r:10,rpe:7},{w:24,r:10,rpe:7.5},{w:26,r:8,rpe:8}],
+      dlr: [{w:10,r:15,rpe:7},{w:10,r:15,rpe:7},{w:10,r:14,rpe:7.5}],
+      scr: [{w:55,r:12,rpe:7},{w:57,r:11,rpe:7},{w:57,r:10,rpe:7.5}],
+      lp:  [{w:50,r:12,rpe:7},{w:52,r:11,rpe:7.5},{w:52,r:10,rpe:8}],
+      te:  [{w:26,r:12,rpe:7},{w:27,r:12,rpe:7},{w:27,r:11,rpe:7.5}]
+    }},
+    'B1-W4-C-2026-04-30': { comment: '', sets: {
+      bs:  [{w:70,r:8,rpe:7},{w:75,r:7,rpe:7.5},{w:75,r:6,rpe:8}],
+      db:  [{w:26,r:10,rpe:7},{w:28,r:10,rpe:7},{w:28,r:9,rpe:7.5}],
+      slp: [{w:60,r:12,rpe:7},{w:62,r:11,rpe:7},{w:62,r:10,rpe:7.5}],
+      fp:  [{w:17,r:15,rpe:6},{w:19,r:15,rpe:6.5},{w:19,r:14,rpe:7}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:28,rpe:6},{w:0,r:25,rpe:6.5}]
+    }},
+    // Block 1 — Week 5
+    'B1-W5-A-2026-05-05': { comment: 'Top sets feeling heavy but good', sets: {
+      rdl: [{w:62.5,r:10,rpe:7},{w:67.5,r:9,rpe:7.5},{w:67.5,r:8,rpe:8.5}],
+      bss: [{w:22,r:10,rpe:7},{w:24,r:10,rpe:7.5},{w:24,r:9,rpe:8}],
+      ht:  [{w:90,r:12,rpe:7},{w:100,r:12,rpe:8},{w:110,r:10,rpe:9}],
+      ghr: [{w:2.5,r:10,rpe:7},{w:2.5,r:9,rpe:7.5},{w:5,r:7,rpe:8.5}],
+      abd: [{w:46,r:20,rpe:6},{w:48,r:20,rpe:6},{w:48,r:19,rpe:6.5}]
+    }},
+    'B1-W5-B-2026-05-06': { comment: '', sets: {
+      idp: [{w:24,r:10,rpe:7},{w:26,r:9,rpe:7.5},{w:26,r:8,rpe:8.5}],
+      dlr: [{w:10,r:15,rpe:7},{w:10,r:15,rpe:7},{w:11,r:13,rpe:7.5}],
+      scr: [{w:57,r:12,rpe:7},{w:60,r:11,rpe:7.5},{w:60,r:10,rpe:8}],
+      lp:  [{w:52,r:12,rpe:7},{w:55,r:11,rpe:7.5},{w:55,r:10,rpe:8.5}],
+      te:  [{w:27,r:12,rpe:7},{w:29,r:12,rpe:7},{w:29,r:10,rpe:8}]
+    }},
+    'B1-W5-C-2026-05-07': { comment: 'Squat moving well, legs pumped', sets: {
+      bs:  [{w:72.5,r:8,rpe:7},{w:77.5,r:7,rpe:8},{w:77.5,r:6,rpe:8.5}],
+      db:  [{w:26,r:10,rpe:7},{w:28,r:10,rpe:7.5},{w:30,r:9,rpe:8}],
+      slp: [{w:62,r:12,rpe:7},{w:65,r:11,rpe:7},{w:65,r:10,rpe:7.5}],
+      fp:  [{w:19,r:15,rpe:6.5},{w:19,r:15,rpe:6.5},{w:19,r:14,rpe:7}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:25,rpe:7}]
+    }},
+    // Block 2 — Week 1
+    'B2-W1-A-2026-05-19': { comment: 'Fresh block, dialled back', sets: {
+      rdl: [{w:60,r:10,rpe:7},{w:65,r:9,rpe:7.5},{w:65,r:8,rpe:8}],
+      bss: [{w:22,r:10,rpe:7},{w:24,r:10,rpe:7},{w:24,r:9,rpe:7.5}],
+      ht:  [{w:90,r:12,rpe:7},{w:100,r:11,rpe:7.5},{w:100,r:10,rpe:8}],
+      ghr: [{w:2.5,r:9,rpe:7},{w:2.5,r:9,rpe:7},{w:5,r:8,rpe:7.5}],
+      abd: [{w:46,r:20,rpe:6},{w:48,r:20,rpe:6},{w:48,r:19,rpe:6.5}]
+    }},
+    'B2-W1-B-2026-05-20': { comment: '', sets: {
+      idp: [{w:22,r:10,rpe:7},{w:24,r:10,rpe:7},{w:26,r:9,rpe:7.5}],
+      dlr: [{w:10,r:15,rpe:7},{w:10,r:15,rpe:7},{w:11,r:14,rpe:7}],
+      scr: [{w:55,r:12,rpe:7},{w:57,r:11,rpe:7},{w:60,r:10,rpe:7.5}],
+      lp:  [{w:50,r:12,rpe:7},{w:52,r:11,rpe:7},{w:55,r:10,rpe:7.5}],
+      te:  [{w:27,r:12,rpe:7},{w:27,r:12,rpe:7},{w:29,r:11,rpe:7.5}]
+    }},
+    'B2-W1-C-2026-05-21': { comment: '', sets: {
+      bs:  [{w:70,r:8,rpe:7},{w:75,r:7,rpe:7.5},{w:75,r:6,rpe:8}],
+      db:  [{w:26,r:10,rpe:7},{w:28,r:10,rpe:7},{w:28,r:9,rpe:7.5}],
+      slp: [{w:62,r:12,rpe:7},{w:65,r:11,rpe:7},{w:65,r:10,rpe:7.5}],
+      fp:  [{w:19,r:15,rpe:6},{w:19,r:15,rpe:6},{w:19,r:14,rpe:6.5}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:25,rpe:6.5}]
+    }},
+    // Block 2 — Week 2
+    'B2-W2-A-2026-05-26': { comment: 'Hip thrust going up nicely', sets: {
+      rdl: [{w:62.5,r:10,rpe:7},{w:67.5,r:9,rpe:7.5},{w:67.5,r:8,rpe:8}],
+      bss: [{w:24,r:10,rpe:7},{w:24,r:10,rpe:7.5},{w:26,r:9,rpe:8}],
+      ht:  [{w:100,r:12,rpe:7},{w:110,r:11,rpe:8},{w:110,r:10,rpe:8.5}],
+      ghr: [{w:2.5,r:10,rpe:7},{w:5,r:9,rpe:7.5},{w:5,r:8,rpe:8}],
+      abd: [{w:48,r:20,rpe:6},{w:48,r:20,rpe:6},{w:50,r:18,rpe:6.5}]
+    }},
+    'B2-W2-B-2026-05-27': { comment: '', sets: {
+      idp: [{w:24,r:10,rpe:7},{w:26,r:9,rpe:7.5},{w:26,r:8,rpe:8}],
+      dlr: [{w:10,r:15,rpe:7},{w:11,r:15,rpe:7},{w:11,r:13,rpe:7.5}],
+      scr: [{w:57,r:12,rpe:7},{w:60,r:11,rpe:7},{w:62,r:10,rpe:7.5}],
+      lp:  [{w:52,r:12,rpe:7},{w:55,r:11,rpe:7.5},{w:55,r:10,rpe:8}],
+      te:  [{w:27,r:12,rpe:7},{w:29,r:12,rpe:7},{w:29,r:11,rpe:7.5}]
+    }},
+    'B2-W2-C-2026-05-28': { comment: '', sets: {
+      bs:  [{w:72.5,r:8,rpe:7},{w:77.5,r:7,rpe:7.5},{w:77.5,r:6,rpe:8}],
+      db:  [{w:28,r:10,rpe:7},{w:28,r:10,rpe:7},{w:30,r:9,rpe:7.5}],
+      slp: [{w:65,r:12,rpe:7},{w:67,r:11,rpe:7},{w:67,r:10,rpe:7.5}],
+      fp:  [{w:19,r:15,rpe:6},{w:20,r:15,rpe:6.5},{w:20,r:14,rpe:6.5}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:28,rpe:6.5}]
+    }},
+    // Block 2 — Week 3 (current)
+    'B2-W3-A-2026-06-02': { comment: 'Legs absolutely smoked. Good session.', sets: {
+      rdl: [{w:65,r:10,rpe:7},{w:70,r:9,rpe:7.5},{w:70,r:8,rpe:8}],
+      bss: [{w:24,r:10,rpe:7},{w:26,r:10,rpe:7.5},{w:26,r:9,rpe:8}],
+      ht:  [{w:100,r:12,rpe:7},{w:110,r:12,rpe:8},{w:120,r:10,rpe:9}],
+      ghr: [{w:5,r:9,rpe:7},{w:5,r:9,rpe:7.5},{w:5,r:8,rpe:8}],
+      abd: [{w:50,r:20,rpe:6},{w:50,r:20,rpe:6},{w:50,r:19,rpe:6.5}]
+    }},
+    'B2-W3-B-2026-06-04': { comment: 'Press felt strong today', sets: {
+      idp: [{w:24,r:10,rpe:7},{w:26,r:10,rpe:7.5},{w:28,r:8,rpe:8}],
+      dlr: [{w:11,r:15,rpe:7},{w:11,r:15,rpe:7},{w:12,r:13,rpe:7.5}],
+      scr: [{w:60,r:12,rpe:7},{w:62,r:11,rpe:7},{w:62,r:10,rpe:7.5}],
+      lp:  [{w:55,r:12,rpe:7},{w:57,r:11,rpe:7.5},{w:57,r:10,rpe:8}],
+      te:  [{w:29,r:12,rpe:7},{w:29,r:12,rpe:7},{w:31,r:10,rpe:8}]
+    }},
+    'B2-W3-C-2026-06-06': { comment: '', sets: {
+      bs:  [{w:75,r:8,rpe:7},{w:80,r:7,rpe:7.5},{w:80,r:6,rpe:8.5}],
+      db:  [{w:28,r:10,rpe:7},{w:30,r:10,rpe:7},{w:30,r:9,rpe:7.5}],
+      slp: [{w:67,r:12,rpe:7},{w:70,r:11,rpe:7},{w:70,r:10,rpe:7.5}],
+      fp:  [{w:20,r:15,rpe:6},{w:20,r:15,rpe:6.5},{w:20,r:14,rpe:6.5}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:28,rpe:6.5}]
+    }},
+    // Block 2 — Week 4 (partially done)
+    'B2-W4-A-2026-06-09': { comment: 'New hip thrust PB!', sets: {
+      rdl: [{w:67.5,r:10,rpe:7},{w:72.5,r:9,rpe:7.5},{w:72.5,r:8,rpe:8}],
+      bss: [{w:26,r:10,rpe:7},{w:26,r:10,rpe:7.5},{w:28,r:9,rpe:8}],
+      ht:  [{w:100,r:12,rpe:7},{w:115,r:11,rpe:8},{w:125,r:10,rpe:9}],
+      ghr: [{w:5,r:10,rpe:7},{w:5,r:9,rpe:7.5},{w:7.5,r:7,rpe:8.5}],
+      abd: [{w:50,r:20,rpe:6},{w:52,r:20,rpe:6},{w:52,r:19,rpe:6.5}]
+    }},
+    'B2-W4-B-2026-06-11': { comment: '', sets: {
+      idp: [{w:26,r:10,rpe:7},{w:28,r:9,rpe:7.5},{w:28,r:8,rpe:8}],
+      dlr: [{w:11,r:15,rpe:7},{w:12,r:15,rpe:7},{w:12,r:13,rpe:7.5}],
+      scr: [{w:62,r:12,rpe:7},{w:65,r:11,rpe:7},{w:65,r:10,rpe:7.5}],
+      lp:  [{w:57,r:12,rpe:7},{w:60,r:11,rpe:7.5},{w:60,r:10,rpe:8}],
+      te:  [{w:29,r:12,rpe:7},{w:31,r:12,rpe:7},{w:31,r:11,rpe:7.5}]
+    }},
+    'B2-W4-C-2026-06-13': { comment: 'Squat depth solid, knee tracking well', sets: {
+      bs:  [{w:75,r:8,rpe:7},{w:82.5,r:7,rpe:7.5},{w:82.5,r:6,rpe:8.5}],
+      db:  [{w:28,r:10,rpe:7},{w:30,r:10,rpe:7},{w:32,r:9,rpe:7.5}],
+      slp: [{w:70,r:12,rpe:7},{w:72,r:11,rpe:7},{w:72,r:10,rpe:7.5}],
+      fp:  [{w:20,r:15,rpe:6},{w:22,r:15,rpe:6.5},{w:22,r:14,rpe:7}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:30,rpe:6.5}]
+    }},
+    // Block 2 — Week 5 (most recent — today's view)
+    'B2-W5-A-2026-06-16': { comment: 'Top sets heavy, RDL pushing 75kg soon', sets: {
+      rdl: [{w:67.5,r:10,rpe:7},{w:72.5,r:9,rpe:7.5},{w:72.5,r:8,rpe:8.5}],
+      bss: [{w:26,r:10,rpe:7},{w:28,r:10,rpe:7.5},{w:28,r:9,rpe:8}],
+      ht:  [{w:100,r:12,rpe:7},{w:115,r:12,rpe:8},{w:130,r:10,rpe:9}],
+      ghr: [{w:5,r:10,rpe:7},{w:7.5,r:9,rpe:7.5},{w:7.5,r:7,rpe:8.5}],
+      abd: [{w:52,r:20,rpe:6},{w:52,r:20,rpe:6},{w:54,r:19,rpe:6.5}]
+    }},
+    'B2-W5-B-2026-06-18': { comment: '', sets: {
+      idp: [{w:26,r:10,rpe:7},{w:28,r:10,rpe:7.5},{w:30,r:8,rpe:8.5}],
+      dlr: [{w:12,r:15,rpe:7},{w:12,r:15,rpe:7},{w:12,r:14,rpe:7.5}],
+      scr: [{w:62,r:12,rpe:7},{w:65,r:12,rpe:7},{w:67,r:10,rpe:8}],
+      lp:  [{w:57,r:12,rpe:7},{w:60,r:11,rpe:7.5},{w:62,r:10,rpe:8}],
+      te:  [{w:31,r:12,rpe:7},{w:31,r:12,rpe:7},{w:33,r:10,rpe:8}]
+    }},
+    'B2-W5-C-2026-06-20': { comment: 'Squat PB incoming next block. Legs feel great.', sets: {
+      bs:  [{w:77.5,r:8,rpe:7},{w:82.5,r:7,rpe:7.5},{w:85,r:6,rpe:8.5}],
+      db:  [{w:30,r:10,rpe:7},{w:32,r:10,rpe:7},{w:32,r:9,rpe:7.5}],
+      slp: [{w:70,r:12,rpe:7},{w:72,r:11,rpe:7.5},{w:75,r:10,rpe:8}],
+      fp:  [{w:22,r:15,rpe:6},{w:22,r:15,rpe:6.5},{w:22,r:14,rpe:7}],
+      core:[{w:0,r:30,rpe:6},{w:0,r:30,rpe:6},{w:0,r:30,rpe:6.5}]
+    }}
+  }
+};
+
+// ── STATE (read-only demo) ────────────────────────────────────────────────────
+let state = JSON.parse(JSON.stringify(DEMO_STATE));
+let currentBlock = 2;
+let currentWeek = 5;
+let currentDay = 'A';
+let modalChart = null;
+let bwChart = null;
+
+function today() { return '2026-06-24'; }
+function sessionKey(block, week, day, date) { return `B${block}-W${week}-${day}-${date}`; }
+
+function getSessionsForWeekDay(block, week, day) {
+  return Object.entries(state.sessions)
+    .filter(([k]) => k.startsWith(`B${block}-W${week}-${day}-`))
+    .map(([k, v]) => ({ key: k, date: k.split('-').slice(3).join('-'), ...v }))
+    .sort((a,b) => b.date.localeCompare(a.date));
+}
+
+function init() {
+  currentBlock = 2; currentWeek = 5; currentDay = 'A';
+  buildBlockBar();
+  buildWeekBar();
+  renderExercises();
+  loadComment();
+  renderWeightLog();
+  document.getElementById('bwDate').value = today();
+  document.body.style.opacity = '1';
+  const splash = document.getElementById('splash');
+  setTimeout(() => splash.classList.add('hide'), 2400);
+  setTimeout(() => splash.remove(), 2950);
+}
+
+function buildBlockBar() {
+  const bar = document.getElementById('blockBar');
+  bar.innerHTML = '';
+  Object.keys(state.blocks).map(Number).sort((a,b)=>a-b).forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'sel-btn' + (b === currentBlock ? ' active' : '');
+    btn.textContent = state.blocks[b].label;
+    btn.onclick = () => { currentBlock = b; currentWeek = 1;
+      document.querySelectorAll('#blockBar .sel-btn').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active'); buildWeekBar(); renderExercises(); loadComment(); };
+    bar.appendChild(btn);
+  });
+}
+
+function buildWeekBar() {
+  const bar = document.getElementById('weekBar');
+  bar.innerHTML = '';
+  for (let w = 1; w <= 6; w++) {
+    const isDeload = w === 6;
+    const btn = document.createElement('button');
+    btn.className = 'sel-btn' + (isDeload?' deload':'') + (w===currentWeek?' active':'');
+    btn.textContent = isDeload ? 'Deload' : `Week ${w}`;
+    btn.onclick = () => selectWeek(w, btn);
+    bar.appendChild(btn);
+  }
+}
+
+function selectWeek(w, btn) {
+  currentWeek = w;
+  document.querySelectorAll('#weekBar .sel-btn').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  renderExercises(); loadComment();
+}
+
+function selectDay(d, btn) {
+  currentDay = d;
+  document.querySelectorAll('.day-tab').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  renderExercises(); loadComment();
+}
+
+function renderExercises() {
+  const list = document.getElementById('exerciseList');
+  const isDeload = currentWeek === 6;
+  const exercises = EXERCISES[currentDay];
+  const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
+  const sess = existing.length > 0 ? state.sessions[existing[0].key] : { sets:{}, comment:'' };
+  const sessDate = existing.length > 0 ? existing[0].date : today();
+
+  document.getElementById('sessionDateBadge').innerHTML =
+    `<div class="session-date-badge">B${currentBlock} · W${currentWeek} · ${currentDay} · ${sessDate}</div>`;
+
+  list.innerHTML = '';
+  if (isDeload) {
+    list.innerHTML = `<div style="background:var(--blue-dim);border:0.5px solid rgba(92,158,255,0.3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--blue);">
+      <strong>Deload week</strong> — 2 sets max, RPE ≤ 6.
+    </div>`;
+  }
+
+  const lastSessionSets = getLastSessionSets(currentBlock, currentWeek, currentDay);
+
+  exercises.forEach((ex, idx) => {
+    const savedSets = sess.sets[ex.id] || [];
+    const setCount = savedSets.filter(s => s.w || s.r).length;
+    const vol = savedSets.reduce((acc,s)=>acc+(s.w&&s.r?Number(s.w)*Number(s.r):0),0);
+    const rpeTarget = isDeload ? '≤6' : ex.rpe;
+    const lastHint = lastSessionSets[ex.id];
+
+    const block = document.createElement('div');
+    block.className = 'exercise-block';
+    block.innerHTML = `
+      <div class="exercise-header" onclick="toggleExercise('ex-${idx}')">
+        <div style="flex:1;min-width:0;">
+          <div class="exercise-name clickable" onclick="event.stopPropagation();openExerciseModal('${ex.id}','${ex.name.replace(/'/g,"\\'")}')">${ex.name}</div>
+          <div class="exercise-meta">${ex.target} · RPE ${rpeTarget}${setCount>0?` · ${setCount} set${setCount>1?'s':''} · ${vol.toLocaleString()} kg`:''}</div>
+        </div>
+        <div class="exercise-chevron" id="chev-${idx}">⌄</div>
+      </div>
+      <div class="exercise-body" id="ex-${idx}">
+        ${lastHint?`<div class="last-session-hint">Last time: <strong>${lastHint}</strong></div>`:''}
+        <div class="set-headers">
+          <div></div><div class="set-label">kg</div><div class="set-label">reps</div><div class="set-label">RPE</div><div></div>
+        </div>
+        <div id="sets-${ex.id}"></div>
+        <button class="btn btn-sm" style="margin-top:4px;opacity:0.4;cursor:default;">+ Add set</button>
+      </div>`;
+    list.appendChild(block);
+
+    const container = document.getElementById('sets-' + ex.id);
+    savedSets.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      row.innerHTML = `
+        <div class="set-num">${i+1}</div>
+        <input class="set-input" type="number" value="${s.w||''}" readonly>
+        <input class="set-input" type="number" value="${s.r||''}" readonly>
+        <input class="set-input" type="number" value="${s.rpe||''}" readonly>
+        <div style="width:28px;"></div>`;
+      container.appendChild(row);
+    });
+  });
+}
+
+function getLastSessionSets(block, week, day) {
+  const hints = {};
+  for (let w = week - 1; w >= 1; w--) {
+    const prev = getSessionsForWeekDay(block, w, day);
+    if (prev.length > 0) {
+      const prevSess = state.sessions[prev[0].key];
+      EXERCISES[day].forEach(ex => {
+        if (!hints[ex.id]) {
+          const sets = (prevSess.sets[ex.id]||[]).filter(s=>s.w&&s.r);
+          if (sets.length) {
+            const summary = sets.map(s=>`${s.w}×${s.r}@${s.rpe||'?'}`).join(', ');
+            hints[ex.id] = `${summary} (W${w})`;
+          }
+        }
+      });
+      break;
+    }
+  }
+  return hints;
+}
+
+function toggleExercise(bodyId) {
+  const body = document.getElementById(bodyId);
+  const idx = bodyId.replace('ex-','');
+  const chev = document.getElementById('chev-'+idx);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+function loadComment() {
+  const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
+  document.getElementById('sessionComment').value = existing.length>0 ? (state.sessions[existing[0].key].comment||'') : '';
+}
+
+function getExerciseHistory(exId) {
+  const results = [];
+  Object.entries(state.sessions).forEach(([key, sess]) => {
+    const sets = sess.sets[exId];
+    if (sets && sets.some(s=>s.w||s.r)) {
+      const parts = key.split('-');
+      results.push({ key, date: parts.slice(3).join('-'), block:parts[0], week:parts[1], sets });
+    }
+  });
+  return results.sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function topSet(sets) {
+  const valid = sets.filter(s=>s.w&&s.r);
+  if (!valid.length) return null;
+  return valid.reduce((best,s)=>(!best||Number(s.w)>Number(best.w))?s:best, null);
+}
+
+function computeVolume(sets) {
+  return sets.reduce((acc,s)=>acc+(s.w&&s.r?Number(s.w)*Number(s.r):0),0);
+}
+
+function openExerciseModal(exId, exName) {
+  const history = getExerciseHistory(exId);
+  document.getElementById('modalTitle').textContent = exName;
+  const allSets = history.flatMap(h=>h.sets.filter(s=>s.w&&s.r));
+  const topW = allSets.length ? Math.max(...allSets.map(s=>Number(s.w))) : 0;
+  const rpeArr = allSets.filter(s=>s.rpe).map(s=>Number(s.rpe));
+  const avgRpe = rpeArr.length ? (rpeArr.reduce((a,b)=>a+b,0)/rpeArr.length).toFixed(1) : '—';
+  const lastVol = history.length ? computeVolume(history[history.length-1].sets) : 0;
+  document.getElementById('modalStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${topW?topW+' kg':'—'}</div><div class="stat-lbl">All-time top set</div></div>
+    <div class="stat-card"><div class="stat-val">${history.length}</div><div class="stat-lbl">Sessions</div></div>
+    <div class="stat-card"><div class="stat-val">${lastVol?lastVol.toLocaleString()+' kg':'—'}</div><div class="stat-lbl">Last vol</div></div>
+    <div class="stat-card"><div class="stat-val">${avgRpe}</div><div class="stat-lbl">Avg RPE</div></div>`;
+  const histDiv = document.getElementById('modalHistory');
+  histDiv.innerHTML = history.slice().reverse().map(h => {
+    const ts = topSet(h.sets);
+    const vol = computeVolume(h.sets);
+    return `<div style="padding:10px 0;border-bottom:0.5px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;">
+        <div style="font-size:13px;color:var(--text2);">${h.date} <span style="color:var(--text3);font-size:11px;">${h.block} ${h.week}</span></div>
+        <div style="font-size:13px;">${ts?ts.w+' kg × '+ts.r:''}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px;">${h.sets.filter(s=>s.w||s.r).length} sets · ${vol.toLocaleString()} kg vol</div>
+    </div>`;
+  }).join('');
+  if (modalChart) { modalChart.destroy(); modalChart = null; }
+  if (history.length) {
+    const labels = history.map(h=>h.date.slice(5));
+    const topWeights = history.map(h=>topSet(h.sets)?.w||null);
+    const volumes = history.map(h=>computeVolume(h.sets));
+    modalChart = new Chart(document.getElementById('modalCanvas'), {
+      type:'line',
+      data:{ labels, datasets:[
+        {label:'Top set (kg)',data:topWeights,borderColor:'#c8f542',backgroundColor:'rgba(200,245,66,0.1)',tension:0.3,pointRadius:4,yAxisID:'y'},
+        {label:'Volume',data:volumes,borderColor:'#5c9eff',backgroundColor:'rgba(92,158,255,0.1)',tension:0.3,pointRadius:4,borderDash:[4,3],yAxisID:'y2'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{
+          y:{position:'left',grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#999',font:{size:11}}},
+          y2:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#5c9eff',font:{size:11}}},
+          x:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#999',font:{size:11}}}
+        }}
+    });
+  }
+  document.getElementById('exModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showProgressPage() {
+  const content = document.getElementById('progressContent');
+  content.innerHTML = '';
+  ['A','B','C'].forEach(day => {
+    const title = document.createElement('div');
+    title.className = 'section-title'; title.textContent = `Day ${day}`;
+    content.appendChild(title);
+    EXERCISES[day].forEach(ex => {
+      const history = getExerciseHistory(ex.id);
+      const last = history[history.length-1];
+      const lastTop = last ? topSet(last.sets) : null;
+      const row = document.createElement('div');
+      row.className = 'progress-ex-row';
+      row.innerHTML = `
+        <div>
+          <div style="font-size:15px;font-weight:500;color:var(--accent);">${ex.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">${history.length} session${history.length!==1?'s':''} logged</div>
+        </div>
+        <div style="text-align:right;">
+          ${lastTop?`<div style="font-size:15px;font-weight:600;">${lastTop.w} kg</div><div style="font-size:11px;color:var(--text3);">last top</div>`:'<div style="font-size:13px;color:var(--text3);">No data</div>'}
+        </div>`;
+      row.onclick = () => openExerciseModal(ex.id, ex.name);
+      content.appendChild(row);
+    });
+  });
+}
+
+function renderWeightLog() {
+  const container = document.getElementById('weightLog');
+  const chartCard = document.getElementById('weightChart');
+  const weights = state.weights;
+  if (!weights.length) { chartCard.style.display='none'; return; }
+  chartCard.style.display = 'block';
+  const recent = weights.slice(-7);
+  const avg = recent.reduce((a,w)=>a+w.kg,0)/recent.length;
+  const diff = weights[weights.length-1].kg - weights[0].kg;
+  document.getElementById('bwStats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${weights[weights.length-1].kg.toFixed(1)} kg</div><div class="stat-lbl">Current</div></div>
+    <div class="stat-card"><div class="stat-val">${avg.toFixed(1)} kg</div><div class="stat-lbl">7-day avg</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:${diff<=0?'var(--accent)':'var(--red)'}">${diff>0?'+':''}${diff.toFixed(1)} kg</div><div class="stat-lbl">Total change</div></div>
+    <div class="stat-card"><div class="stat-val">${weights.length}</div><div class="stat-lbl">Check-ins</div></div>`;
+  if (bwChart) { bwChart.destroy(); bwChart = null; }
+  bwChart = new Chart(document.getElementById('bwCanvas'), {
+    type:'line',
+    data:{labels:weights.map(w=>w.date.slice(5)),datasets:[{label:'kg',data:weights.map(w=>w.kg),borderColor:'#c8f542',backgroundColor:'rgba(200,245,66,0.08)',tension:0.3,pointRadius:3,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#999',font:{size:11}}},x:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#999',font:{size:11},maxTicksLimit:8}}}}
+  });
+  container.innerHTML = `<div class="section-title" style="margin-top:20px;">Log history</div>` +
+    weights.slice().reverse().map(w =>
+      `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);">
+        <div style="font-size:14px;color:var(--text2);">${w.date}</div>
+        <div style="font-size:15px;font-weight:500;">${w.kg.toFixed(1)} kg</div>
+      </div>`).join('');
+}
+
+function showPage(page, tabEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  const titles = {train:'Gymothy',progress:'Progress',weight:'Body weight',settings:'Settings'};
+  document.getElementById('navTitle').textContent = titles[page];
+  if (page==='progress') showProgressPage();
+  if (page==='weight') renderWeightLog();
+}
+
+document.getElementById('exModal').addEventListener('click', e => { if (e.target===e.currentTarget) closeModal('exModal'); });
+
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
