@@ -547,8 +547,9 @@ function getLastSessionSets(block, week, day) {
         if (!hints[ex.id]) {
           const sets = (prevSess.sets[ex.id] || []).filter(s => s.w && s.r);
           if (sets.length) {
-            const top = sets.reduce((b,s) => s.w > b.w ? s : b, sets[0]);
-            hints[ex.id] = `${sets.length}×${top.r} @ ${top.w}kg RPE ${top.rpe||'—'} (W${w})`;
+            const top = sets.reduce((b,s) => Number(s.w) > Number(b.w) ? s : b, sets[0]);
+            const setsSummary = sets.map(s => `${s.w}×${s.r}@${s.rpe||'?'}`).join(', ');
+            hints[ex.id] = `${setsSummary} (W${w})`;
           }
         }
       });
