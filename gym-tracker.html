@@ -147,7 +147,7 @@
   /* ── FORMS ── */
   .comment-area { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; padding: 10px; resize: vertical; min-height: 70px; font-family: inherit; margin-top: 6px; }
   .comment-area:focus { outline: none; border-color: var(--accent); }
-  .weight-input-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+  .weight-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; align-items: end; }
   .input-group { flex: 1; }
   .input-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
   .text-input { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px; color: var(--text); font-family: inherit; }
@@ -244,11 +244,11 @@
       <label class="input-label">Weight (kg)</label>
       <input class="text-input" type="number" step="0.1" id="bwInput" placeholder="68.5">
     </div>
-    <div class="input-group" style="max-width:130px;">
+    <div class="input-group">
       <label class="input-label">Date</label>
       <input class="text-input" type="date" id="bwDate">
     </div>
-    <button class="btn btn-accent" onclick="logWeight()" style="flex-shrink:0;">Log</button>
+    <button class="btn btn-accent" onclick="logWeight()" style="grid-column: 1 / -1;">Log</button>
   </div>
   <div id="weightChart" class="card" style="display:none;">
     <div class="section-title" style="margin-top:0;">Body weight over time</div>
@@ -674,15 +674,24 @@ function addSet(exId, maxSets, date) {
   const { sess } = getSessForCurrentView(true);
   if (!sess.sets[exId]) sess.sets[exId] = [];
   if (sess.sets[exId].length >= maxSets) { showToast(`Max ${maxSets} sets`, 'error'); return; }
+
+  // Capture open states before re-render
+  const openStates = EXERCISES[currentDay].map((ex, i) =>
+    document.getElementById(`ex-${i}`)?.classList.contains('open') ?? false
+  );
+
   sess.sets[exId].push({ w:'', r:'', rpe:'' });
   saveState();
   renderExercises();
-  // Re-open
-  const idx = EXERCISES[currentDay].findIndex(e => e.id === exId);
-  if (idx >= 0) {
-    document.getElementById(`ex-${idx}`)?.classList.add('open');
-    document.getElementById(`chev-${idx}`)?.classList.add('open');
-  }
+
+  // Restore open states, always force-open the one we just added to
+  const targetIdx = EXERCISES[currentDay].findIndex(e => e.id === exId);
+  EXERCISES[currentDay].forEach((ex, i) => {
+    if (openStates[i] || i === targetIdx) {
+      document.getElementById(`ex-${i}`)?.classList.add('open');
+      document.getElementById(`chev-${i}`)?.classList.add('open');
+    }
+  });
 }
 
 function updateSet(exId, idx, field, val, checkDeload) {
@@ -715,7 +724,24 @@ function updateSet(exId, idx, field, val, checkDeload) {
 
 function deleteSet(exId, idx) {
   const { sess } = getSessForCurrentView();
-  if (sess.sets[exId]) { sess.sets[exId].splice(idx, 1); saveState(); renderExercises(); }
+  if (!sess.sets[exId]) return;
+
+  // Capture which exercises are open before re-render
+  const openStates = EXERCISES[currentDay].map((ex, i) =>
+    document.getElementById(`ex-${i}`)?.classList.contains('open') ?? false
+  );
+
+  sess.sets[exId].splice(idx, 1);
+  saveState();
+  renderExercises();
+
+  // Restore accordion state
+  EXERCISES[currentDay].forEach((ex, i) => {
+    if (openStates[i]) {
+      document.getElementById(`ex-${i}`)?.classList.add('open');
+      document.getElementById(`chev-${i}`)?.classList.add('open');
+    }
+  });
 }
 
 function updateDeloadName(exId, val, date) {
