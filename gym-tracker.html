@@ -582,6 +582,7 @@ function selectWeek(w, btn) {
   currentWeek = w;
   document.querySelectorAll('#weekBar .sel-btn').forEach(x => x.classList.remove('active'));
   btn.classList.add('active');
+  saveState();
   renderExercises();
   loadComment();
 }
