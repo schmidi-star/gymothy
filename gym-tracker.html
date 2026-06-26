@@ -84,11 +84,16 @@
   .page.active { display: block; }
 
   /* ── TABBAR ── */
-  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 0.5px solid var(--border); display: flex; padding: 8px 0 16px; z-index: 100; }
-  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px; }
-  .tab-icon { font-size: 22px; color: var(--text3); transition: color 0.15s; }
-  .tab-label { font-size: 10px; color: var(--text3); transition: color 0.15s; }
-  .tab.active .tab-icon, .tab.active .tab-label { color: var(--accent); }
+  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 0.5px solid var(--border); display: flex; padding: 8px 0 16px; z-index: 100; overflow: hidden; }  
+  .tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 8px 4px; background: none; border: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  .tab-pill { position: absolute; top: 5px; width: 50px; height: 34px; border-radius: 13px; background: rgba(200,245,66,0.18); border: 0.5px solid rgba(200,245,66,0.4); left: 50%; transform: translateX(-50%) scale(0.75); opacity: 0; transition: opacity 0.22s ease, transform 0.28s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+  .tab.active .tab-pill { opacity: 1; transform: translateX(-50%) scale(1); }
+  .tab-icon-svg { color: var(--text3); transition: color 0.2s ease; position: relative; z-index: 1; }
+  .tab-fill { opacity: 0; transition: opacity 0.2s ease; }
+  .tab.active .tab-icon-svg { color: var(--accent); }
+  .tab.active .tab-fill { opacity: 0.15; }
+  .tab-label { font-size: 10px; color: var(--text3); transition: color 0.2s ease; font-weight: 500; position: relative; z-index: 1; }
+  .tab.active .tab-label { color: var(--accent); font-weight: 600; }
   .pb { padding-bottom: 90px; }
 
   .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
@@ -293,22 +298,71 @@
 </div>
 
 <div class="tabbar">
-  <div class="tab active" onclick="showPage('train',this)">
-    <div class="tab-icon">🏋️</div>
+  <button class="tab active" onclick="showPage('train',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="4.5" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <rect x="16.3" y="8" width="3.2" height="8" rx="1.2"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4.5" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <rect x="16.3" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <line x1="7.7" y1="12" x2="16.3" y2="12"></line>
+        <line x1="2.8" y1="9.6" x2="2.8" y2="14.4"></line>
+        <line x1="21.2" y1="9.6" x2="21.2" y2="14.4"></line>
+      </g>
+    </svg>
     <div class="tab-label">Train</div>
-  </div>
-  <div class="tab" onclick="showPage('progress',this)">
-    <div class="tab-icon">📈</div>
+  </button>
+
+  <button class="tab" onclick="showPage('progress',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="4" y="12.5" width="3.6" height="6.5" rx="1.2"></rect>
+        <rect x="16.4" y="4.5" width="3.6" height="14.5" rx="1.2"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="12.5" width="3.6" height="6.5" rx="1.2"></rect>
+        <rect x="10.2" y="8.5" width="3.6" height="10.5" rx="1.2"></rect>
+        <rect x="16.4" y="4.5" width="3.6" height="14.5" rx="1.2"></rect>
+      </g>
+    </svg>
     <div class="tab-label">Progress</div>
-  </div>
-  <div class="tab" onclick="showPage('weight',this)">
-    <div class="tab-icon">⚖️</div>
+  </button>
+
+  <button class="tab" onclick="showPage('weight',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+        <path d="M8.4 14.4 a3.8 3.8 0 0 1 7.2 0"></path>
+        <line x1="12" y1="14.4" x2="14.1" y2="11.5"></line>
+      </g>
+    </svg>
     <div class="tab-label">Weight</div>
-  </div>
-  <div class="tab" onclick="showPage('settings',this)">
-    <div class="tab-icon">⚙️</div>
+  </button>
+
+  <button class="tab" onclick="showPage('settings',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="7.5" x2="20" y2="7.5"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="16.5" x2="20" y2="16.5"></line>
+      </g>
+      <g fill="var(--bg)" stroke="currentColor" stroke-width="1.7">
+        <circle cx="9" cy="7.5" r="2.3"></circle>
+        <circle cx="15.5" cy="12" r="2.3"></circle>
+        <circle cx="8" cy="16.5" r="2.3"></circle>
+      </g>
+    </svg>
     <div class="tab-label">Settings</div>
-  </div>
+  </button>
 </div>
 
 <!-- EXERCISE PROGRESS MODAL -->
