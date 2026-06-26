@@ -84,12 +84,17 @@
   .page.active { display: block; }
 
   /* ── TABBAR ── */
-  .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 0.5px solid var(--border); display: flex; padding: 8px 0 16px; z-index: 100; }
-  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px; }
-  .tab-icon { font-size: 22px; color: var(--text3); transition: color 0.15s; }
-  .tab-label { font-size: 10px; color: var(--text3); transition: color 0.15s; }
-  .tab.active .tab-icon, .tab.active .tab-label { color: var(--accent); }
-  .pb { padding-bottom: 90px; }
+  .tabbar { position: fixed; bottom: 16px; left: 16px; right: 16px; background: rgba(24,24,24,0.92); border: 0.5px solid rgba(255,255,255,0.10); border-radius: 22px; display: flex; padding: 4px 6px; z-index: 100; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 10px 34px rgba(0,0,0,0.5); }  
+  .tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 8px 4px; background: none; border: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  .tab-pill { position: absolute; top: 4px; width: 50px; height: 34px; border-radius: 13px; background: rgba(200,245,66,0.18); border: 0.5px solid rgba(200,245,66,0.4); left: 50%; transform: translateX(-50%) scale(0.75); opacity: 0; transition: opacity 0.22s ease, transform 0.28s cubic-bezier(.34,1.56,.64,1); pointer-events: none; z-index: 0; }  
+  .tab.active .tab-pill { opacity: 1; transform: translateX(-50%) scale(1); }
+  .tab-icon-svg { color: var(--text3); transition: color 0.2s ease; position: relative; z-index: 1; }
+  .tab-fill { opacity: 0; transition: opacity 0.2s ease; }
+  .tab.active .tab-icon-svg { color: var(--accent); }
+  .tab.active .tab-fill { opacity: 0.15; }
+  .tab-label { font-size: 10px; color: var(--text3); transition: color 0.2s ease; font-weight: 500; position: relative; z-index: 1; }
+  .tab.active .tab-label { color: var(--accent); font-weight: 600; }
+  .pb { padding-bottom: 110px; }
 
   .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 
@@ -115,9 +120,7 @@
   .exercise-block { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
   .exercise-header { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; }
   .exercise-name { font-size: 15px; font-weight: 500; }
-  .exercise-name-row { display: flex; align-items: center; gap: 4px; }
-  .analytics-btn { background: none; border: none; color: var(--text3); cursor: pointer; padding: 5px 7px; margin: -5px -7px -5px 0; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; -webkit-tap-highlight-color: transparent; }
-  .analytics-btn:active { color: var(--accent); background: var(--accent-dim); }
+  .exercise-name.clickable { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .exercise-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
   .exercise-chevron { font-size: 20px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
   .exercise-chevron.open { transform: rotate(180deg); }
@@ -234,7 +237,7 @@
   <div id="exerciseList"></div>
   <div style="margin-top:14px;">
     <div class="section-title">Session notes</div>
-    <textarea class="comment-area" id="sessionComment" placeholder="Fatigue level, aches, anything to remember…" oninput="saveComment()"></textarea>
+    <textarea class="comment-area" id="sessionComment" placeholder="Fatigue level, aches, anything to remember…" oninput="saveComment()" onfocus="this.placeholder=''" onblur="this.placeholder='Fatigue level, aches, anything to remember…'"></textarea>
   </div>
 </div>
 
@@ -293,22 +296,71 @@
 </div>
 
 <div class="tabbar">
-  <div class="tab active" onclick="showPage('train',this)">
-    <div class="tab-icon">🏋️</div>
+  <button class="tab active" onclick="showPage('train',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="4.5" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <rect x="16.3" y="8" width="3.2" height="8" rx="1.2"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4.5" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <rect x="16.3" y="8" width="3.2" height="8" rx="1.2"></rect>
+        <line x1="7.7" y1="12" x2="16.3" y2="12"></line>
+        <line x1="2.8" y1="9.6" x2="2.8" y2="14.4"></line>
+        <line x1="21.2" y1="9.6" x2="21.2" y2="14.4"></line>
+      </g>
+    </svg>
     <div class="tab-label">Train</div>
-  </div>
-  <div class="tab" onclick="showPage('progress',this)">
-    <div class="tab-icon">📈</div>
+  </button>
+
+  <button class="tab" onclick="showPage('progress',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="4" y="12.5" width="3.6" height="6.5" rx="1.2"></rect>
+        <rect x="16.4" y="4.5" width="3.6" height="14.5" rx="1.2"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="12.5" width="3.6" height="6.5" rx="1.2"></rect>
+        <rect x="10.2" y="8.5" width="3.6" height="10.5" rx="1.2"></rect>
+        <rect x="16.4" y="4.5" width="3.6" height="14.5" rx="1.2"></rect>
+      </g>
+    </svg>
     <div class="tab-label">Progress</div>
-  </div>
-  <div class="tab" onclick="showPage('weight',this)">
-    <div class="tab-icon">⚖️</div>
+  </button>
+
+  <button class="tab" onclick="showPage('weight',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g class="tab-fill" fill="currentColor">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+        <path d="M8.4 14.4 a3.8 3.8 0 0 1 7.2 0"></path>
+        <line x1="12" y1="14.4" x2="14.1" y2="11.5"></line>
+      </g>
+    </svg>
     <div class="tab-label">Weight</div>
-  </div>
-  <div class="tab" onclick="showPage('settings',this)">
-    <div class="tab-icon">⚙️</div>
+  </button>
+
+  <button class="tab" onclick="showPage('settings',this)">
+    <div class="tab-pill"></div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="tab-icon-svg">
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="7.5" x2="20" y2="7.5"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="16.5" x2="20" y2="16.5"></line>
+      </g>
+      <g fill="var(--bg)" stroke="currentColor" stroke-width="1.7">
+        <circle cx="9" cy="7.5" r="2.3"></circle>
+        <circle cx="15.5" cy="12" r="2.3"></circle>
+        <circle cx="8" cy="16.5" r="2.3"></circle>
+      </g>
+    </svg>
     <div class="tab-label">Settings</div>
-  </div>
+  </button>
 </div>
 
 <!-- EXERCISE PROGRESS MODAL -->
@@ -426,7 +478,7 @@ function getOrCreateSession(block, week, day, date) {
 function init() {
   loadState();
   currentBlock = state.currentBlock || 1;
-  currentWeek = 1;
+  currentWeek = state.currentWeek || 1;
   currentDay = 'A';
   buildBlockBar();
   buildWeekBar();
@@ -461,6 +513,7 @@ function loadState() {
 
 function saveState() {
   state.currentBlock = currentBlock;
+  state.currentWeek = currentWeek;
   localStorage.setItem('gymothy', JSON.stringify(state));
 }
 
@@ -529,6 +582,7 @@ function selectWeek(w, btn) {
   currentWeek = w;
   document.querySelectorAll('#weekBar .sel-btn').forEach(x => x.classList.remove('active'));
   btn.classList.add('active');
+  saveState();
   renderExercises();
   loadComment();
 }
@@ -546,7 +600,7 @@ function renderExercises() {
   const list = document.getElementById('exerciseList');
   const isDeload = currentWeek === 6;
   const exercises = EXERCISES[currentDay];
-  const maxSets = isDeload ? 2 : 4;
+  const maxSets = 10;
 
   // Find existing session for this block/week/day (any date)
   const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
@@ -581,7 +635,7 @@ function renderExercises() {
 
     const nameHtml = isDeload
       ? `<input class="text-input" value="${ex.name}" style="font-size:15px;font-weight:500;background:transparent;border:none;padding:0;width:220px;color:var(--text);" onchange="updateDeloadName('${ex.id}',this.value,${JSON.stringify(sessDate)})" onclick="event.stopPropagation()">`
-      : `<div class="exercise-name-row"><div class="exercise-name">${ex.name}</div><button class="analytics-btn" onclick="event.stopPropagation();openExerciseModal('${ex.id}','${ex.name.replace(/'/g,"\\'")}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="0.5" y="9" width="3" height="4.5" rx="0.5"/><rect x="5.5" y="5" width="3" height="8.5" rx="0.5"/><rect x="10.5" y="1.5" width="3" height="12" rx="0.5"/></svg></button></div>`;
+      : `<div class="exercise-name clickable" onclick="event.stopPropagation();openExerciseModal('${ex.id}','${ex.name.replace(/'/g,"\\'")}')">` + ex.name + `</div>`;
 
     block.innerHTML = `
       <div class="exercise-header" onclick="toggleExercise('ex-${idx}')">
