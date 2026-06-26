@@ -239,7 +239,7 @@
   <div id="exerciseList"></div>
   <div style="margin-top:14px;">
     <div class="section-title">Session notes</div>
-    <textarea class="comment-area" id="sessionComment" placeholder="Fatigue level, aches, anything to remember…" oninput="saveComment()"></textarea>
+    <textarea class="comment-area" id="sessionComment" placeholder="Fatigue level, aches, anything to remember…" oninput="saveComment()" onfocus="this.placeholder=''" onblur="this.placeholder='Fatigue level, aches, anything to remember…'"></textarea>
   </div>
 </div>
 
