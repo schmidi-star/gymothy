@@ -480,7 +480,7 @@ function getOrCreateSession(block, week, day, date) {
 function init() {
   loadState();
   currentBlock = state.currentBlock || 1;
-  currentWeek = 1;
+  currentWeek = state.currentWeek || 1;
   currentDay = 'A';
   buildBlockBar();
   buildWeekBar();
@@ -515,6 +515,7 @@ function loadState() {
 
 function saveState() {
   state.currentBlock = currentBlock;
+  state.currentWeek = currentWeek;
   localStorage.setItem('gymothy', JSON.stringify(state));
 }
 
