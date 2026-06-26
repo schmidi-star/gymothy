@@ -115,7 +115,9 @@
   .exercise-block { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
   .exercise-header { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; }
   .exercise-name { font-size: 15px; font-weight: 500; }
-  .exercise-name.clickable { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .exercise-name-row { display: flex; align-items: center; gap: 4px; }
+  .analytics-btn { background: none; border: none; color: var(--text3); cursor: pointer; padding: 5px 7px; margin: -5px -7px -5px 0; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; -webkit-tap-highlight-color: transparent; }
+  .analytics-btn:active { color: var(--accent); background: var(--accent-dim); }
   .exercise-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
   .exercise-chevron { font-size: 20px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
   .exercise-chevron.open { transform: rotate(180deg); }
@@ -148,9 +150,9 @@
   .comment-area { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; padding: 10px; resize: vertical; min-height: 70px; font-family: inherit; margin-top: 6px; }
   .comment-area:focus { outline: none; border-color: var(--accent); }
   .weight-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; align-items: end; }
-  .input-group { flex: 1; }
-  .input-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
-  .text-input { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 15px; color: var(--text); font-family: inherit; box-sizing: border-box; height: 44px; }
+  .input-group { display: flex; flex-direction: column; }
+  .input-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; min-height: 16px; }
+  .text-input { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 8px; font-size: 15px; color: var(--text); font-family: inherit; box-sizing: border-box; height: 44px; min-width: 0; -webkit-appearance: none; appearance: none; }
   .text-input:focus { outline: none; border-color: var(--accent); }
 
   /* ── STATS ── */
@@ -576,7 +578,7 @@ function renderExercises() {
 
     const nameHtml = isDeload
       ? `<input class="text-input" value="${ex.name}" style="font-size:15px;font-weight:500;background:transparent;border:none;padding:0;width:220px;color:var(--text);" onchange="updateDeloadName('${ex.id}',this.value,${JSON.stringify(sessDate)})" onclick="event.stopPropagation()">`
-      : `<div class="exercise-name clickable" onclick="event.stopPropagation();openExerciseModal('${ex.id}','${ex.name.replace(/'/g,"\\'")}')">${ex.name}</div>`;
+      : `<div class="exercise-name-row"><div class="exercise-name">${ex.name}</div><button class="analytics-btn" onclick="event.stopPropagation();openExerciseModal('${ex.id}','${ex.name.replace(/'/g,"\\'")}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="0.5" y="9" width="3" height="4.5" rx="0.5"/><rect x="5.5" y="5" width="3" height="8.5" rx="0.5"/><rect x="10.5" y="1.5" width="3" height="12" rx="0.5"/></svg></button></div>`;
 
     block.innerHTML = `
       <div class="exercise-header" onclick="toggleExercise('ex-${idx}')">
