@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(gh issue view 12 --repo schmidi-star/gymothy)",
+      "WebFetch(domain:github.com)",
+      "Bash(dir \"c:\\\\Users\\\\Tea\\\\gymothy\")",
+      "PowerShell(gh issue view 13 --repo schmidi-star/gymothy)"
+    ]
+  }
+}
