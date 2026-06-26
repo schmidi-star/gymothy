@@ -600,7 +600,7 @@ function renderExercises() {
   const list = document.getElementById('exerciseList');
   const isDeload = currentWeek === 6;
   const exercises = EXERCISES[currentDay];
-  const maxSets = isDeload ? 2 : 4;
+  const maxSets = 10;
 
   // Find existing session for this block/week/day (any date)
   const existing = getSessionsForWeekDay(currentBlock, currentWeek, currentDay);
