@@ -192,6 +192,11 @@
   .empty-icon { font-size: 36px; margin-bottom: 10px; }
   .progress-ex-row { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
   .progress-ex-row:active { opacity: 0.7; }
+  @keyframes inputPulse {
+    0%, 100% { border-color: var(--border2); box-shadow: none; }
+    50% { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  }
+  .input-pulse { animation: inputPulse 700ms ease; }
 </style>
 </head>
 <body>
@@ -963,6 +968,16 @@ function closeModal(id) {
 }
 
 // ─── WEIGHT ───────────────────────────────────────────────────────────────────
+function highlightWeightForm() {
+  const input = document.getElementById('bwInput');
+  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  input.focus();
+  input.classList.remove('input-pulse');
+  void input.offsetWidth;
+  input.classList.add('input-pulse');
+  setTimeout(() => input.classList.remove('input-pulse'), 700);
+}
+
 function logWeight() {
   const kg = parseFloat(document.getElementById('bwInput').value);
   const date = document.getElementById('bwDate').value;
@@ -982,7 +997,19 @@ function renderWeightLog() {
   const chartCard = document.getElementById('weightChart');
   const weights = state.weights;
   if (!weights.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">⚖️</div><div>No weight logged yet</div></div>';
+    container.innerHTML = `
+      <div class="card" style="text-align:center;padding:32px 24px;">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style="margin-bottom:16px;color:var(--accent);">
+          <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"></rect>
+            <path d="M8.4 14.4 a3.8 3.8 0 0 1 7.2 0"></path>
+            <line x1="12" y1="14.4" x2="14.1" y2="11.5"></line>
+          </g>
+        </svg>
+        <div style="font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;">Start tracking your weight</div>
+        <div style="font-size:14px;color:var(--text2);margin-bottom:20px;">Log your weight regularly to track progress over time.</div>
+        <button class="btn btn-accent" onclick="highlightWeightForm()">Log weight</button>
+      </div>`;
     chartCard.style.display = 'none';
     return;
   }
